@@ -2,12 +2,20 @@ import React, { useCallback } from 'react'
 import { useDispatch } from 'react-redux'
 import { useDataProvider, useTranslate } from 'react-admin'
 import { IconButton, Tooltip, makeStyles } from '@material-ui/core'
-import AlbumIcon from '@material-ui/icons/Album'
 import { clearQueue, playTracks } from '../actions'
+import randomAlbumIcon from './random_album.ico'
 
 const useStyles = makeStyles((theme) => ({
   button: {
     color: theme.palette.text.secondary,
+  },
+  icon: {
+    width: 20,
+    height: 20,
+    opacity: 0.7,
+    '&:hover': {
+      opacity: 1,
+    },
   },
 }))
 
@@ -56,7 +64,7 @@ const PlayRandomAlbumButton = () => {
         className={classes.button}
         onClick={handlePlayRandomAlbum}
       >
-        <AlbumIcon />
+        <img src={randomAlbumIcon} alt="Random Album" className={classes.icon} />
       </IconButton>
     </Tooltip>
   )
