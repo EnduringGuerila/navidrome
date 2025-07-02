@@ -10,6 +10,7 @@ import {
   PLAYER_SET_VOLUME,
   PLAYER_SYNC_QUEUE,
   PLAYER_SET_MODE,
+  PLAYER_SET_RANDOM_ALBUM_MODE,
 } from '../actions'
 import config from '../config'
 
@@ -19,6 +20,7 @@ const initialState = {
   clear: false,
   volume: config.defaultUIVolume / 100,
   savedPlayIndex: 0,
+  randomAlbumMode: false,
 }
 
 const pad = (value) => {
@@ -186,6 +188,13 @@ const reduceMode = (state, { data: { mode } }) => {
   }
 }
 
+const reduceRandomAlbumMode = (state, { data: { enabled } }) => {
+  return {
+    ...state,
+    randomAlbumMode: enabled,
+  }
+}
+
 export const playerReducer = (previousState = initialState, payload) => {
   const { type } = payload
   switch (type) {
@@ -207,6 +216,8 @@ export const playerReducer = (previousState = initialState, payload) => {
       return reduceCurrent(previousState, payload)
     case PLAYER_SET_MODE:
       return reduceMode(previousState, payload)
+    case PLAYER_SET_RANDOM_ALBUM_MODE:
+      return reduceRandomAlbumMode(previousState, payload)
     default:
       return previousState
   }

@@ -13,8 +13,9 @@ import {
 } from '@material-ui/core'
 import ViewHeadlineIcon from '@material-ui/icons/ViewHeadline'
 import ViewModuleIcon from '@material-ui/icons/ViewModule'
+import RadioIcon from '@material-ui/icons/Radio'
 import { useDispatch, useSelector } from 'react-redux'
-import { albumViewGrid, albumViewTable } from '../actions'
+import { albumViewGrid, albumViewTable, setRandomAlbumMode } from '../actions'
 import { ToggleFieldsMenu } from '../common'
 
 const useStyles = makeStyles({
@@ -69,6 +70,28 @@ const AlbumViewToggler = React.forwardRef(
 
 AlbumViewToggler.displayName = 'AlbumViewToggler'
 
+const RandomAlbumRadioButton = () => {
+  const dispatch = useDispatch()
+  const translate = useTranslate()
+  const randomAlbumMode = useSelector((state) => state.player.randomAlbumMode)
+  
+  const handleToggle = () => {
+    dispatch(setRandomAlbumMode(!randomAlbumMode))
+  }
+  
+  return (
+    <Button
+      size="small"
+      label={translate('resources.album.actions.randomAlbumRadio')}
+      color={randomAlbumMode ? 'primary' : 'secondary'}
+      onClick={handleToggle}
+      title={translate('resources.album.actions.randomAlbumRadioTooltip')}
+    >
+      <RadioIcon fontSize="inherit" />
+    </Button>
+  )
+}
+
 const AlbumListActions = ({
   currentSort,
   className,
@@ -99,6 +122,7 @@ const AlbumListActions = ({
           filterValues,
           context: 'button',
         })}
+      <RandomAlbumRadioButton />
       {isNotSmall ? (
         <ToggleFieldsMenu
           resource="album"

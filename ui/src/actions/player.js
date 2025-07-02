@@ -102,3 +102,15 @@ export const setPlayMode = (mode) => ({
   type: PLAYER_SET_MODE,
   data: { mode },
 })
+
+export const PLAYER_SET_RANDOM_ALBUM_MODE = 'PLAYER_SET_RANDOM_ALBUM_MODE'
+export const PLAYER_LOAD_RANDOM_ALBUM = 'PLAYER_LOAD_RANDOM_ALBUM'
+
+export const setRandomAlbumMode = (enabled) => ({
+  type: PLAYER_SET_RANDOM_ALBUM_MODE,
+  data: { enabled },
+})
+
+export const loadRandomAlbum = () => ({
+  type: PLAYER_LOAD_RANDOM_ALBUM,
+})

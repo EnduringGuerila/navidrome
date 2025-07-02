@@ -19,6 +19,7 @@ import AudioTitle from './AudioTitle'
 import {
   clearQueue,
   currentPlaying,
+  playTracks,
   setPlayMode,
   setVolume,
   syncQueue,
@@ -252,7 +253,7 @@ const Player = () => {
   )
 
   const onAudioEnded = useCallback(
-    (currentPlayId, audioLists, info) => {
+    async (currentPlayId, audioLists, info) => {
       setScrobbled(false)
       setStartTime(null)
       dispatch(currentPlaying(info))
@@ -260,8 +261,42 @@ const Player = () => {
         .getOne('keepalive', { id: info.trackId })
         // eslint-disable-next-line no-console
         .catch((e) => console.log('Keepalive error:', e))
+
+      // Check if random album mode is enabled and queue is ending
+      const isLastTrack = currentPlayId === audioLists.length - 1
+      if (playerState.randomAlbumMode && isLastTrack) {
+        try {
+          // Get a random album
+          const randomAlbumResponse = await dataProvider.getList('album', {
+            pagination: { page: 1, perPage: 1 },
+            sort: { field: 'random', order: 'ASC' },
+            filter: {},
+          })
+          
+          if (randomAlbumResponse.data.length > 0) {
+            const randomAlbum = randomAlbumResponse.data[0]
+            // Get songs from the random album
+            const songsResponse = await dataProvider.getList('song', {
+              pagination: { page: 1, perPage: 100 },
+              sort: { field: 'track_number', order: 'ASC' },
+              filter: { album_id: randomAlbum.id },
+            })
+            
+            if (songsResponse.data.length > 0) {
+              // Play the songs from the random album
+              const songs = songsResponse.data.reduce((acc, song) => {
+                acc[song.id] = song
+                return acc
+              }, {})
+              dispatch(playTracks(songs, songsResponse.data.map(s => s.id)))
+            }
+          }
+        } catch (error) {
+          console.error('Error loading random album:', error)
+        }
+      }
     },
-    [dispatch, dataProvider],
+    [dispatch, dataProvider, playerState.randomAlbumMode],
   )
 
   const onCoverClick = useCallback((mode, audioLists, audioInfo) => {

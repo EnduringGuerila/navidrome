@@ -86,7 +86,10 @@
         "shuffle": "Shuffle",
         "addToPlaylist": "Add to Playlist",
         "download": "Download",
-        "info": "Get Info"
+        "info": "Get Info",
+        "randomAlbumRadio": "Random Album Radio",
+        "randomAlbumRadioTooltip": "Automatically play random albums when the current album finishes",
+        "playRandomAlbum": "Play Random Album"
       },
       "lists": {
         "all": "All",

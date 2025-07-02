@@ -15,6 +15,7 @@ import { AboutDialog } from '../dialogs'
 import PersonalMenu from './PersonalMenu'
 import ActivityPanel from './ActivityPanel'
 import NowPlayingPanel from './NowPlayingPanel'
+import PlayRandomAlbumButton from './PlayRandomAlbumButton'
 import UserMenu from './UserMenu'
 import config from '../config'
 
@@ -124,6 +125,7 @@ const CustomUserMenu = ({ onClick, ...rest }) => {
         permissions === 'admin' &&
         config.enableNowPlaying && <NowPlayingPanel />}
       {config.devActivityPanel && permissions === 'admin' && <ActivityPanel />}
+      <PlayRandomAlbumButton />
       <UserMenu {...rest}>
         <PersonalMenu sidebarIsOpen={true} onClick={onClick} />
         <Divider />
