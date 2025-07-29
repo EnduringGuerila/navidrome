@@ -78,10 +78,6 @@ type wasmPlugin[S any] interface {
 	getMetrics() metrics.Metrics
 }
 
-type errorMapper interface {
-	mapError(err error) error
-}
-
 func callMethod[S any, R any](ctx context.Context, wp WasmPlugin, methodName string, fn func(inst S) (R, error)) (R, error) {
 	// Add a unique call ID to the context for tracing
 	ctx = log.NewContext(ctx, "callID", id.NewRandom())
@@ -101,10 +97,6 @@ func callMethod[S any, R any](ctx context.Context, wp WasmPlugin, methodName str
 	defer done()
 	r, err = checkErr(fn(inst))
 	elapsed := time.Since(start)
-
-	if em, ok := any(p).(errorMapper); ok {
-		err = em.mapError(err)
-	}
 
 	if !errors.Is(err, api.ErrNotImplemented) {
 		id := p.PluginID()
@@ -127,17 +119,41 @@ type errorResponse interface {
 
 // checkErr returns an updated error if the response implements errorResponse and contains an error message.
 // If the response is nil, it returns the original error. Otherwise, it wraps or creates an error as needed.
+// It also maps error strings to their corresponding api.Err* constants.
 func checkErr[T any](resp T, err error) (T, error) {
 	if any(resp) == nil {
-		return resp, err
+		return resp, mapAPIError(err)
 	}
 	respErr, ok := any(resp).(errorResponse)
 	if ok && respErr.GetError() != "" {
-		if err == nil {
-			err = errors.New(respErr.GetError())
-		} else {
-			err = fmt.Errorf("%s: %w", respErr.GetError(), err)
+		respErrMsg := respErr.GetError()
+		respErrErr := errors.New(respErrMsg)
+		mappedErr := mapAPIError(respErrErr)
+		// Check if the error was mapped to an API error (different from the temp error)
+		if errors.Is(mappedErr, api.ErrNotImplemented) || errors.Is(mappedErr, api.ErrNotFound) {
+			// Return the mapped API error instead of wrapping
+			return resp, mappedErr
 		}
+		// For non-API errors, use wrap the original error if it is not nil
+		return resp, errors.Join(respErrErr, err)
 	}
-	return resp, err
+	return resp, mapAPIError(err)
+}
+
+// mapAPIError maps error strings to their corresponding api.Err* constants.
+// This is needed as errors from plugins may not be of type api.Error, due to serialization/deserialization.
+func mapAPIError(err error) error {
+	if err == nil {
+		return nil
+	}
+
+	errStr := err.Error()
+	switch errStr {
+	case api.ErrNotImplemented.Error():
+		return api.ErrNotImplemented
+	case api.ErrNotFound.Error():
+		return api.ErrNotFound
+	default:
+		return err
+	}
 }
